@@ -1,1 +1,4 @@
-# SWT1_Vermietungssystem
+SWT1 Vermietungssystem
+----------------------
+
+Datenbank Implementation für das Vermietungssystem
