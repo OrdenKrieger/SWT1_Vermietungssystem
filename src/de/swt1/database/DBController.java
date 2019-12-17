@@ -51,35 +51,38 @@ public class DBController {
     private void handleDB() {
         try {
             Statement stmt = connection.createStatement();
-            stmt.executeUpdate("DROP TABLE IF EXISTS books;");
-            stmt.executeUpdate("CREATE TABLE books (author, title, pages, price);");
-            stmt.execute("INSERT INTO books (author, title, pages, price) VALUES ('Paulchen Paule', 'Paul der Penner', '1234', '5.67')");
-
-            PreparedStatement ps = connection
-                .prepareStatement("INSERT INTO books VALUES (?, ?, ?, ?);");
-
-            ps.setString(1, "Willi Winzig");
-            ps.setString(2, "Willi's Wille");
-            ps.setInt(3, 432);
-            ps.setDouble(4, 32.95);
-            ps.addBatch();
-
-            ps.setString(1, "Anton Antonius");
-            ps.setString(2, "Anton's Alarm");
-            ps.setInt(3, 123);
-            ps.setDouble(4, 98.76);
-            ps.addBatch();
+            stmt.executeUpdate("DROP TABLE IF EXISTS objekt;");
+            stmt.executeUpdate("CREATE TABLE objekt (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL DEFAULT '0'," +
+                " name varchar(50) NOT NULL, etage varchar(50) DEFAULT NULL," +
+                " textfeld varchar(200) DEFAULT NULL, bild blob);");
+            stmt.execute("INSERT INTO objekt (id, name, etage, textfeld, bild) VALUES ('1', 'TH-Lübeck', '13. Etage', 'Tolles Gebäude', null)");
+//
+//            PreparedStatement ps = connection
+//                .prepareStatement("INSERT INTO books VALUES (?, ?, ?, ?);");
+//
+//            ps.setString(1, "Willi Winzig");
+//            ps.setString(2, "Willi's Wille");
+//            ps.setInt(3, 432);
+//            ps.setDouble(4, 32.95);
+//            ps.addBatch();
+//
+//            ps.setString(1, "Anton Antonius");
+//            ps.setString(2, "Anton's Alarm");
+//            ps.setInt(3, 123);
+//            ps.setDouble(4, 98.76);
+//            ps.addBatch();
 
             connection.setAutoCommit(false);
-            ps.executeBatch();
+            //ps.executeBatch();
             connection.setAutoCommit(true);
 
-            ResultSet rs = stmt.executeQuery("SELECT * FROM books;");
+            ResultSet rs = stmt.executeQuery("SELECT * FROM objekt;");
             while (rs.next()) {
-                System.out.println("Autor = " + rs.getString("author"));
-                System.out.println("Titel = " + rs.getString("title"));
-                System.out.println("Seiten = " + rs.getInt("pages"));
-                System.out.println("Preis = " + rs.getDouble("price"));
+                System.out.println("ID = " + rs.getInt("id"));
+                System.out.println("Name = " + rs.getString("name"));
+                System.out.println("Etage = " + rs.getString("etage"));
+                System.out.println("Beschreibung = " + rs.getString("textfeld"));
+                //System.out.println("Bild = " + rs.getDouble("price"));
             }
             rs.close();
             connection.close();
