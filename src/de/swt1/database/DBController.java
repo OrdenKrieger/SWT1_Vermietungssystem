@@ -1,6 +1,8 @@
 package de.swt1.database;
 
+import java.io.*;
 import java.sql.*;
+import java.util.Arrays;
 
 public class DBController {
     private static DBController dbcontroller;
@@ -48,6 +50,24 @@ public class DBController {
         });
     }
 
+    private byte[] readFile(String file) {
+        ByteArrayOutputStream bos = null;
+        try {
+            File f = new File(file);
+            FileInputStream fis = new FileInputStream(f);
+            byte[] buffer = new byte[1024];
+            bos = new ByteArrayOutputStream();
+            for (int len; (len = fis.read(buffer)) != -1;) {
+                bos.write(buffer, 0, len);
+            }
+        } catch (FileNotFoundException e) {
+            System.err.println(e.getMessage());
+        } catch (IOException e2) {
+            System.err.println(e2.getMessage());
+        }
+        return bos != null ? bos.toByteArray() : null;
+    }
+
     private void handleDB() {
         try {
             Statement stmt = connection.createStatement();
@@ -55,25 +75,42 @@ public class DBController {
             stmt.executeUpdate("CREATE TABLE objekt (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL DEFAULT '0'," +
                 " name varchar(50) NOT NULL, etage varchar(50) DEFAULT NULL," +
                 " textfeld varchar(200) DEFAULT NULL, bild blob);");
-            stmt.execute("INSERT INTO objekt (id, name, etage, textfeld, bild) VALUES ('1', 'TH-Lübeck', '13. Etage', 'Tolles Gebäude', null)");
-//
-//            PreparedStatement ps = connection
-//                .prepareStatement("INSERT INTO books VALUES (?, ?, ?, ?);");
-//
-//            ps.setString(1, "Willi Winzig");
-//            ps.setString(2, "Willi's Wille");
-//            ps.setInt(3, 432);
-//            ps.setDouble(4, 32.95);
-//            ps.addBatch();
-//
-//            ps.setString(1, "Anton Antonius");
-//            ps.setString(2, "Anton's Alarm");
-//            ps.setInt(3, 123);
-//            ps.setDouble(4, 98.76);
-//            ps.addBatch();
+
+            //stmt.execute("INSERT INTO objekt (name, etage, textfeld, bild) VALUES ('TH-Lübeck', '13. Etage', 'Tolles Gebäude', null)");
+            PreparedStatement ps = connection
+                .prepareStatement("INSERT INTO objekt (name, etage, textfeld, bild) VALUES (?, ?, ?, ?);");
+
+            ps.setString(1, "TH-Lübeck");
+            ps.setString(2, "13. Etage");
+            ps.setString(3, "Tolles Gebäude");
+
+            // Todo not working correct right now, also my be outsourced to own file util
+            // Every other entry also has the same Byte Array
+            try {
+                ps.setBytes(4, readFile(System.getProperty("user.dir") + "\\" + "example.jpg"));
+            } catch (Exception e) { e.printStackTrace(); }
+            ps.addBatch();
+
+            ps.setString(1, "Willy-Brandt-Sporthalle");
+            ps.setString(2, "");
+            ps.setString(3, "Sport!!11");
+            //ps.setBlob(4, (Blob)null);
+            ps.addBatch();
+
+            ps.setString(1, "McDonald's Lübeck");
+            ps.setString(2, "");
+            ps.setString(3, "Tolles Ambiente mit leckeren Burgern!");
+            //ps.setBlob(4, (Blob)null);
+            ps.addBatch();
+
+            ps.setString(1, "Bowling World Lübeck");
+            ps.setString(2, "2. Etage");
+            ps.setString(3, "Hier bringt kugeln Spaß");
+            //ps.setBlob(4, (Blob)null);
+            ps.addBatch();
 
             connection.setAutoCommit(false);
-            //ps.executeBatch();
+            ps.executeBatch();
             connection.setAutoCommit(true);
 
             ResultSet rs = stmt.executeQuery("SELECT * FROM objekt;");
@@ -82,7 +119,8 @@ public class DBController {
                 System.out.println("Name = " + rs.getString("name"));
                 System.out.println("Etage = " + rs.getString("etage"));
                 System.out.println("Beschreibung = " + rs.getString("textfeld"));
-                //System.out.println("Bild = " + rs.getDouble("price"));
+                // Todo not working correct right now
+                System.out.println("Bild = " + Arrays.toString(rs.getBytes("bild")));
             }
             rs.close();
             connection.close();
